@@ -67,6 +67,13 @@
             <version>1.10.0-beta18</version>
             <scope>compile</scope>
         </dependency>
+        <!-- 支持结构化输出 -->
+        <dependency>
+            <groupId>com.github.victools</groupId>
+            <artifactId>jsonschema-generator</artifactId>
+            <version>4.38.0</version>
+        </dependency>
+
 
     </dependencies>
 
