@@ -1,11 +1,11 @@
 package com.hln.aiagent.app;
 
 import com.hln.aiagent.advisor.MyLoggerAdvisor;
+import com.hln.aiagent.memory.FileBasedChatMemory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
-import org.springframework.ai.chat.memory.InMemoryChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.stereotype.Component;
@@ -29,13 +29,16 @@ public class LoveApp {
      * @param dashscopeChatModel    根据名称自动注入
      */
     public LoveApp(ChatModel dashscopeChatModel) {
+        // 基于文件的会话记忆
+        ChatMemory chatMemory = new FileBasedChatMemory(System.getProperty("user.dir") + "/tmp/chat_memory");
         // 初始化基于内存的会话记忆
-        ChatMemory chatMemory = new InMemoryChatMemory();
+//        ChatMemory chatMemory = new InMemoryChatMemory();
         chatClient = ChatClient.builder(dashscopeChatModel)
                 .defaultSystem(SYSTEM_PROMPT)
                 .defaultAdvisors(
                         new MessageChatMemoryAdvisor(chatMemory),
                         new MyLoggerAdvisor()
+//                        new ReReadingAdvisor()
                 )
                 .build();
     }
