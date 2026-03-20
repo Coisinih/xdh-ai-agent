@@ -2,12 +2,15 @@ package com.hln.aiagent.app;
 
 import com.hln.aiagent.advisor.MyLoggerAdvisor;
 import com.hln.aiagent.memory.FileBasedChatMemory;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -65,10 +68,7 @@ public class LoveApp {
     record LoveReport(String title, List<String> suggestions){}
 
     /**
-     * AI 基础对话，支持多轮对话记忆
-     * @param message   用户prompt
-     * @param chatId    会话id 用于隔绝会话
-     * @return  大模型输出的结果
+     * 恋爱报告生产
      */
     public LoveReport doChatWhitReport(String message, String chatId) {
         LoveReport loveReport = chatClient
@@ -83,5 +83,24 @@ public class LoveApp {
         return loveReport;
     }
 
+    @Resource
+    private VectorStore loveAppVectorStore;
 
+    /**
+     * 基于 rag 知识库进行会话
+     */
+    public String doChatWithRag(String message, String chatId) {
+        ChatResponse response = chatClient
+                .prompt()
+                .user(message)
+                .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)   // 会话id，用来隔绝会话
+                        .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))  //  每次会话关联上下文的数量，经过验证，这里的n是指最新的n条（不包含当前条）
+                .advisors(new MyLoggerAdvisor(),    // 输出的日志，方便跟踪
+                        new QuestionAnswerAdvisor(loveAppVectorStore))  // 问答知识库
+                .call()
+                .chatResponse();
+        String content = response.getResult().getOutput().getText();
+        log.info("content: {}", content);
+        return content;
+    }
 }
