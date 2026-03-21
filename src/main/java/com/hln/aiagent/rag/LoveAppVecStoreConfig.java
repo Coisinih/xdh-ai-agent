@@ -6,14 +6,14 @@ import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.vectorstore.SimpleVectorStore;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.context.annotation.Bean;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
 
 /**
  * 基于内存的向量数据库
  */
-@Component
+@Configuration
 public class LoveAppVecStoreConfig {
     @Resource
     private LoveAppDocumentLoader loveAppDocumentLoader;

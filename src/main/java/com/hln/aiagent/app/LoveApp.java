@@ -6,7 +6,7 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
-import org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor;
+import org.springframework.ai.chat.client.advisor.api.Advisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
@@ -29,7 +29,8 @@ public class LoveApp {
 
     /**
      * 初始化 ChatClient
-     * @param dashscopeChatModel    根据名称自动注入
+     *
+     * @param dashscopeChatModel 根据名称自动注入
      */
     public LoveApp(ChatModel dashscopeChatModel) {
         // 基于文件的会话记忆
@@ -48,9 +49,10 @@ public class LoveApp {
 
     /**
      * AI 基础对话，支持多轮对话记忆
-     * @param message   用户prompt
-     * @param chatId    会话id 用于隔绝会话
-     * @return  大模型输出的结果
+     *
+     * @param message 用户prompt
+     * @param chatId  会话id 用于隔绝会话
+     * @return 大模型输出的结果
      */
     public String doChat(String message, String chatId) {
         ChatResponse response = chatClient
@@ -65,7 +67,8 @@ public class LoveApp {
         return content;
     }
 
-    record LoveReport(String title, List<String> suggestions){}
+    record LoveReport(String title, List<String> suggestions) {
+    }
 
     /**
      * 恋爱报告生产
@@ -85,9 +88,11 @@ public class LoveApp {
 
     @Resource
     private VectorStore loveAppVectorStore;
+    @Resource
+    private Advisor loveAppRagCloudAdvisor;
 
     /**
-     * 基于 rag 知识库进行会话
+     * 和 rag 知识库进行会话
      */
     public String doChatWithRag(String message, String chatId) {
         ChatResponse response = chatClient
@@ -96,7 +101,9 @@ public class LoveApp {
                 .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)   // 会话id，用来隔绝会话
                         .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))  //  每次会话关联上下文的数量，经过验证，这里的n是指最新的n条（不包含当前条）
                 .advisors(new MyLoggerAdvisor(),    // 输出的日志，方便跟踪
-                        new QuestionAnswerAdvisor(loveAppVectorStore))  // 问答知识库
+//                        new QuestionAnswerAdvisor(loveAppVectorStore) // 基于本地知识库问答
+                        loveAppRagCloudAdvisor // 基于云知识库的增强检索服务
+                )
                 .call()
                 .chatResponse();
         String content = response.getResult().getOutput().getText();
