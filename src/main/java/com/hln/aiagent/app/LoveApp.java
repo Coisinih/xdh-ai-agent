@@ -6,6 +6,7 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.client.advisor.api.Advisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
@@ -90,6 +91,8 @@ public class LoveApp {
     private VectorStore loveAppVectorStore;
     @Resource
     private Advisor loveAppRagCloudAdvisor;
+    @Resource
+    private VectorStore pgVectorVectorStore;
 
     /**
      * 和 rag 知识库进行会话
@@ -101,8 +104,9 @@ public class LoveApp {
                 .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)   // 会话id，用来隔绝会话
                         .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))  //  每次会话关联上下文的数量，经过验证，这里的n是指最新的n条（不包含当前条）
                 .advisors(new MyLoggerAdvisor(),    // 输出的日志，方便跟踪
-//                        new QuestionAnswerAdvisor(loveAppVectorStore) // 基于本地知识库问答
-                        loveAppRagCloudAdvisor // 基于云知识库的增强检索服务
+//                        new QuestionAnswerAdvisor(loveAppVectorStore) // 应用 RAG 知识库问答
+//                        loveAppRagCloudAdvisor // 应用 RAG 检索增强服务 （基于云知识库）
+                        new QuestionAnswerAdvisor(pgVectorVectorStore)  // 应用 RAG 检索增强服务 （基于 PgVector 向量检索知识库）
                 )
                 .call()
                 .chatResponse();
