@@ -103,10 +103,10 @@ public class LoveApp {
                 .user(message)
                 .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)   // 会话id，用来隔绝会话
                         .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))  //  每次会话关联上下文的数量，经过验证，这里的n是指最新的n条（不包含当前条）
-                .advisors(new MyLoggerAdvisor(),    // 输出的日志，方便跟踪
-//                        new QuestionAnswerAdvisor(loveAppVectorStore) // 应用 RAG 知识库问答
+                .advisors(new MyLoggerAdvisor()    // 输出的日志，方便跟踪
+                        ,new QuestionAnswerAdvisor(loveAppVectorStore) // 应用 RAG 知识库问答
 //                        loveAppRagCloudAdvisor // 应用 RAG 检索增强服务 （基于云知识库）
-                        new QuestionAnswerAdvisor(pgVectorVectorStore)  // 应用 RAG 检索增强服务 （基于 PgVector 向量检索知识库）
+//                        new QuestionAnswerAdvisor(pgVectorVectorStore)  // 应用 RAG 检索增强服务 （基于 PgVector 向量检索知识库）
                 )
                 .call()
                 .chatResponse();
