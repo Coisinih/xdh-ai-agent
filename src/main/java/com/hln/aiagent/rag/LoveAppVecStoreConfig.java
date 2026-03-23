@@ -38,8 +38,8 @@ public class LoveAppVecStoreConfig {
 //        List<Document> splitCustomized = myTokenTextSplitter.splitCustomized(documents);
 
         // 使用自定义的元信息关键词提取增强器，提取文档中的关键词
-        List<Document> keywordEnrich = myKeywordEnricher.keywordEnrich(documents);
-        simpleVectorStoreBuilder.add(keywordEnrich);
+//        List<Document> keywordEnrich = myKeywordEnricher.keywordEnrich(documents);
+        simpleVectorStoreBuilder.add(documents);
         return simpleVectorStoreBuilder;
     }
 }
