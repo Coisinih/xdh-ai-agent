@@ -2,15 +2,16 @@ package com.hln.aiagent.app;
 
 import com.hln.aiagent.advisor.MyLoggerAdvisor;
 import com.hln.aiagent.demo.rag.LoveAppRagCustomAdvisorFactory;
-import com.hln.aiagent.memory.FileBasedChatMemory;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.api.Advisor;
 import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.chat.memory.InMemoryChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Component;
 
@@ -35,9 +36,9 @@ public class LoveApp {
      */
     public LoveApp(ChatModel dashscopeChatModel) {
         // 基于文件的会话记忆
-        ChatMemory chatMemory = new FileBasedChatMemory(System.getProperty("user.dir") + "/tmp/chat_memory");
+//        ChatMemory chatMemory = new FileBasedChatMemory(System.getProperty("user.dir") + "/tmp/chat_memory");
         // 初始化基于内存的会话记忆
-//        ChatMemory chatMemory = new InMemoryChatMemory();
+        ChatMemory chatMemory = new InMemoryChatMemory();
         chatClient = ChatClient.builder(dashscopeChatModel)
                 .defaultSystem(SYSTEM_PROMPT)
                 .defaultAdvisors(
@@ -103,13 +104,33 @@ public class LoveApp {
                 .user(message)
                 .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)   // 会话id，用来隔绝会话
                         .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))  //  每次会话关联上下文的数量，经过验证，这里的n是指最新的n条（不包含当前条）
-                .advisors(new MyLoggerAdvisor()    // 输出的日志，方便跟踪
+//                .advisors(new MyLoggerAdvisor()    // 输出的日志，方便跟踪
 //                        ,new QuestionAnswerAdvisor(loveAppVectorStore) // 应用 RAG 知识库问答
 //                        loveAppRagCloudAdvisor // 应用 RAG 检索增强服务 （基于云知识库）
 //                        new QuestionAnswerAdvisor(pgVectorVectorStore)  // 应用 RAG 检索增强服务 （基于 PgVector 向量检索知识库）
-                )
+//                )
                 .advisors(LoveAppRagCustomAdvisorFactory.createAdvisor(loveAppVectorStore, "单身"))
                 .advisors()
+                .call()
+                .chatResponse();
+        String content = response.getResult().getOutput().getText();
+        log.info("content: {}", content);
+        return content;
+    }
+
+    @Resource
+    private ToolCallback[] callingTools;
+
+    /**
+     * 调用工具
+     */
+    public String doCallingTools(String message, String chatId) {
+        ChatResponse response = chatClient
+                .prompt()
+                .user(message)
+                .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)   // 会话id，用来隔绝会话
+                        .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 1))  //  每次会话关联上下文的数量，经过验证，这里的n是指最新的n条（不包含当前条）
+                .tools(callingTools)
                 .call()
                 .chatResponse();
         String content = response.getResult().getOutput().getText();

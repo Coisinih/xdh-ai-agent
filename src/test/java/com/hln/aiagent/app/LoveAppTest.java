@@ -52,4 +52,29 @@ class LoveAppTest {
         String answer = loveApp.doChatWithRag("我已经结婚了，但是婚后关系不太亲密，我应该怎么办？", chatId);
         Assertions.assertNotNull(answer);
     }
+
+    @Test
+    void doCallingTools() {
+//        // 测试网页抓取：恋爱案例分析
+//        testMessage("最近和对象吵架了，看看恋爱社区网站（https://bbs.hupu.com/love-19）的其他情侣是怎么解决矛盾的？");
+//
+//        // 测试资源下载：图片下载,联网搜索
+//        testMessage("直接下载一张适合做手机壁纸的星空情侣图片为文件");
+//
+//        // 测试终端操作：执行代码
+//        testMessage("执行 Python3.py 脚本来生成数据分析报告");
+//
+//        // 测试文件操作：保存用户档案
+//        testMessage("我是已婚，今年的28岁，保存我的恋爱档案为文件");
+//
+//        // 测试 PDF 生成
+        testMessage("生成一份‘七夕约会计划’PDF，包含餐厅预订、活动流程和礼物清单");
+    }
+
+    private void testMessage(String message) {
+        String chatId = UUID.randomUUID().toString();
+        String answer = loveApp.doCallingTools(message, chatId);
+        Assertions.assertNotNull(answer);
+    }
+
 }
