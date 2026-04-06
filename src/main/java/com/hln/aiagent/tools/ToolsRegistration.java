@@ -12,13 +12,15 @@ import org.springframework.context.annotation.Configuration;
 public class ToolsRegistration {
 
     @Bean
-    public ToolCallback[] callingTools(){
+    public ToolCallback[] callingTools() {
         FileOperationTool fileOperationTool = new FileOperationTool();
         PdfGeneratorTool pdfGeneratorTool = new PdfGeneratorTool();
         WebScrapingTool webScrapingTool = new WebScrapingTool();
         TerminalOperationTool terminalOperationTool = new TerminalOperationTool();
         ResourceDownloadTool resourceDownloadTool = new ResourceDownloadTool();
         BaiduWebSearchTool baiduWebSearchTool = new BaiduWebSearchTool();
-        return ToolCallbacks.from(fileOperationTool, pdfGeneratorTool, webScrapingTool, terminalOperationTool, resourceDownloadTool, baiduWebSearchTool);
+        TerminateTool terminateTool = new TerminateTool();
+
+        return ToolCallbacks.from(fileOperationTool, pdfGeneratorTool, webScrapingTool, terminalOperationTool, resourceDownloadTool, baiduWebSearchTool, terminateTool);
     }
 }
