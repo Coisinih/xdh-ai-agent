@@ -15,6 +15,7 @@ import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 
@@ -62,7 +63,7 @@ public class LoveApp {
                 .prompt()
                 .user(message)
                 .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)   // 会话id，用来隔绝会话
-                        .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 1))  //  每次会话关联上下文的数量，经过验证，这里的n是指最新的n条（不包含当前条）
+                        .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))  //  每次会话关联上下文的数量，经过验证，这里的n是指最新的n条（不包含当前条）
                 .call()
                 .chatResponse();
         String content = response.getResult().getOutput().getText();
@@ -157,5 +158,21 @@ public class LoveApp {
         String content = response.getResult().getOutput().getText();
         log.info("content: {}", content);
         return content;
+    }
+
+    /**
+     * AI 基础对话，支持多轮对话记忆，支持 sse 流式返回
+     *
+     * @param message 用户prompt
+     * @param chatId  会话id 用于隔绝会话
+     * @return 大模型输出的结果
+     */
+    public Flux<String> doChatWithSse(String message, String chatId) {
+        return chatClient
+                .prompt()
+                .user(message)
+                .advisors(spec -> spec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)   // 会话id，用来隔绝会话
+                        .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 10))  //  每次会话关联上下文的数量，经过验证，这里的n是指最新的n条（不包含当前条）
+                .stream().content();
     }
 }

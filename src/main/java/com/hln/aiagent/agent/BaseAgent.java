@@ -1,6 +1,7 @@
 package com.hln.aiagent.agent;
 
 
+import com.hln.aiagent.constant.AgentState;
 import io.micrometer.common.util.StringUtils;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;

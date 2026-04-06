@@ -1,4 +1,4 @@
-package com.hln.aiagent.agent;
+package com.hln.aiagent.constant;
 
 /**
  * 代理执行状态的枚举类  

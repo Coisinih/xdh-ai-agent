@@ -2,6 +2,7 @@ package com.hln.aiagent.agent;
 
 import cn.hutool.core.collection.CollUtil;
 import com.alibaba.cloud.ai.dashscope.chat.DashScopeChatOptions;
+import com.hln.aiagent.constant.AgentState;
 import com.itextpdf.styledxmlparser.jsoup.internal.StringUtil;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
