@@ -13,6 +13,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Data
 public abstract class ReActAgent extends BaseAgent {
+    /**
+     * 当前步骤的思考内容，由 think() 填充
+     */
+    private String currentThought = "";
+
+    protected void setCurrentThought(String currentThought) {
+        this.currentThought = currentThought;
+    }
 
     /**
      * 处理当前状态，并决定下一步行动

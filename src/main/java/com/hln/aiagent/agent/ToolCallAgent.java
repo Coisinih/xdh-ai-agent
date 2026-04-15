@@ -70,6 +70,7 @@ public class ToolCallAgent extends ReActAgent {
 
             AssistantMessage assistantMessage = this.toolCallingResponse.getResult().getOutput();
             String result = assistantMessage.getText();
+            setCurrentThought(result);
             List<AssistantMessage.ToolCall> toolCallList = assistantMessage.getToolCalls();
             log.info(getName() + "的思考：" + result);
             log.info(getName() + "选择了 " + toolCallList.size() + " 个工具进行调用。");
@@ -88,6 +89,7 @@ public class ToolCallAgent extends ReActAgent {
             return true;
         } catch (Exception e) {
             log.error("{}思考时遇到了错误：{}", getName(), e.getMessage());
+            setCurrentThought("处理时遇到错误：" + e.getMessage());
             getMessagesList().add(new AssistantMessage("处理时遇到错误：" + e.getMessage()));
             return false;
         }
@@ -121,7 +123,23 @@ public class ToolCallAgent extends ReActAgent {
 
         // 判断是否调用了终止工具，如果调用了，则将执行状态改为已完成
         boolean terminateToolCalled = toolResponseMessage.getResponses().stream().anyMatch(response -> "doTerminate".equals(response.name()));
-        if(terminateToolCalled) setState(AgentState.FINISHED);
+        if (terminateToolCalled) {
+            setState(AgentState.FINISHED);
+            try {
+                Prompt finalPrompt = new Prompt(getMessagesList(), chatOptions);
+                ChatResponse finalResponse = getChatClient().prompt(finalPrompt)
+                        .system(getSystemPrompt())
+                        .call()
+                        .chatResponse();
+                String finalAnswer = finalResponse.getResult().getOutput().getText();
+                if (!StringUtil.isBlank(finalAnswer)) {
+                    getMessagesList().add(finalResponse.getResult().getOutput());
+                    return finalAnswer;
+                }
+            } catch (Exception e) {
+                log.error("{} 生成最终回答时出错：{}", getName(), e.getMessage());
+            }
+        }
 
         return results;
     }

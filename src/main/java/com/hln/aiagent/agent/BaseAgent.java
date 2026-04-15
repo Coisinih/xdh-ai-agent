@@ -67,8 +67,10 @@ public abstract class BaseAgent {
                 log.info("current step: {}/{}", currentStep, this.maxSteps);
                 // 调用子类实现的 step 方法
                 String result = this.step();
+                String thought = this.getCurrentThought();
                 log.info("step{} result: {}", this.currentStep, result);
-                results.add(result);
+                results.add(String.format("step%d thought: %s", this.currentStep, thought));
+                results.add(String.format("step%d result: %s", this.currentStep, result));
             }
 
             if (this.currentStep >= this.maxSteps) {
@@ -121,10 +123,12 @@ public abstract class BaseAgent {
 
                     // 调用子类实现的 step 方法
                     String result = this.step();
+                    String thought = this.getCurrentThought();
                     log.info("step{} result: {}", this.currentStep, result);
 
-                    // 发送每一步结果
-                    emitter.send(String.format("step%d result: %s", this.currentStep, result));
+                    // 分开发送每一步的思考过程和执行结果
+                    emitter.send(String.format("step%d thought: %s", this.currentStep, thought));
+                    emitter.send(String.format("result: %s", result));
                 }
 
                 // 检查是否超出步骤限制
@@ -171,6 +175,13 @@ public abstract class BaseAgent {
      * @return 每一步的执行结果
      */
     public abstract String step();
+
+    protected String getCurrentThought() {
+        if (this instanceof ReActAgent reActAgent) {
+            return StringUtils.isBlank(reActAgent.getCurrentThought()) ? "（无）" : reActAgent.getCurrentThought();
+        }
+        return "（不适用）";
+    }
 
     protected void cleanup() {
         // 清理资源，由子类实现
