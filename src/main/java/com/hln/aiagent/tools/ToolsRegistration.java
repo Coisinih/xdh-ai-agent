@@ -14,13 +14,13 @@ public class ToolsRegistration {
     @Bean
     public ToolCallback[] callingTools() {
         FileOperationTool fileOperationTool = new FileOperationTool();
-        PdfGeneratorTool pdfGeneratorTool = new PdfGeneratorTool();
+//        PdfGeneratorTool pdfGeneratorTool = new PdfGeneratorTool();
         WebScrapingTool webScrapingTool = new WebScrapingTool();
         TerminalOperationTool terminalOperationTool = new TerminalOperationTool();
         ResourceDownloadTool resourceDownloadTool = new ResourceDownloadTool();
         BaiduWebSearchTool baiduWebSearchTool = new BaiduWebSearchTool();
         TerminateTool terminateTool = new TerminateTool();
 
-        return ToolCallbacks.from(fileOperationTool, pdfGeneratorTool, webScrapingTool, terminalOperationTool, resourceDownloadTool, baiduWebSearchTool, terminateTool);
+        return ToolCallbacks.from(fileOperationTool, webScrapingTool, terminalOperationTool, resourceDownloadTool, baiduWebSearchTool, terminateTool);
     }
 }
