@@ -1,8 +1,11 @@
 package com.hln.aiagent.controller;
 
 
+import com.hln.aiagent.agent.MyManus;
 import com.hln.aiagent.app.LoveApp;
 import jakarta.annotation.Resource;
+import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.tool.ToolCallback;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +22,12 @@ public class AIConreoller {
 
     @Resource
     private LoveApp loveApp;
+
+    @Resource
+    private ToolCallback[] allTools;
+
+    @Resource
+    private ChatModel dashscopeChatModel;
 
     /**
      * 同步调用
@@ -63,5 +72,15 @@ public class AIConreoller {
                         emitter::completeWithError, // 处理错误
                         emitter::complete); // 处理完成
         return emitter;
+    }
+
+    /**
+     * 超级智能体的流式调用
+     */
+    @GetMapping("/chat/agent_stream")
+    public SseEmitter doChatWithAgentStream(String message) {
+        // 因为使用 @Resource 注解，是单例模式，将 bean 托管给 Spring AI，多人使用智能体时，容易造成阻塞
+        MyManus myManus = new MyManus(allTools, dashscopeChatModel);
+        return myManus.runStream(message);
     }
 }
