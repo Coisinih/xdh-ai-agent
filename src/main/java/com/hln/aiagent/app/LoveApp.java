@@ -4,6 +4,7 @@ import com.hln.aiagent.advisor.MyLoggerAdvisor;
 import com.hln.aiagent.demo.rag.LoveAppRagCustomAdvisorFactory;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.api.Advisor;
@@ -140,12 +141,15 @@ public class LoveApp {
         return content;
     }
 
-    @Resource
+    @Autowired(required = false)
     private ToolCallbackProvider toolCallbackProvider;
     /**
      * 调用 MCP
      */
     public String doChatWithMcp(String message, String chatId) {
+        if (toolCallbackProvider == null) {
+            throw new IllegalStateException("MCP is disabled or not configured");
+        }
         ChatResponse response = chatClient
                 .prompt()
                 .user(message)
